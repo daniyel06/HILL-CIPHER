@@ -41,59 +41,71 @@ STEP-5: Combine all these groups to get the complete cipher text.
 ```
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
-#define S 2
-int K[S][S] = {{3,3},{2,5}};
-int modInv(int a, int m) 
+
+int main() 
 {
-  a %= m;
-  for (int x = 1; x < m; x++) if ((a * x) % m == 1) return x;
-  return -1;
-}
-int det(int M[S][S]) { return (M[0][0]*M[1][1] - M[0][1]*M[1][0]) % 26; }
-void invMat(int M[S][S], int I[S][S])
-{
-  int d = det(M); if (d < 0) d += 26;
-  int di = modInv(d, 26); if (di == -1) exit(0);
-  I[0][0] =  M[1][1]*di % 26;
-  I[0][1] = -M[0][1]*di % 26;
-  I[1][0] = -M[1][0]*di % 26;
-  I[1][1] =  M[0][0]*di % 26;
-  for (int i = 0; i < S; i++) for (int j = 0; j < S; j++)
-    if (I[i][j] < 0) I[i][j] += 26;
-}
-void mult(int M[S][S], int in[], int out[]) 
-{
-  for (int i = 0; i < S; i++) 
-  {
-    out[i] = 0;
-    for (int j = 0; j < S; j++) out[i] += M[i][j]*in[j];
-    out[i] %= 26;
-  }
-}
-void hill(char *in, char *out, int enc) 
-{
-  int len = strlen(in), V[S], R[S], KM[S][S];
-  if (!enc) invMat(K, KM); else memcpy(KM, K, sizeof(K));
-  for (int i = 0; i < len; i += S) 
-  {
-    for (int j = 0; j < S; j++) V[j] = in[i + j] - 'A';
-    mult(KM, V, R);
-    for (int j = 0; j < S; j++) out[i + j] = R[j] + 'A';
-  }
-  out[len] = 0;
-}
-int main() {
-  char msg[] = "PIRITHARAMAN", enc[100], dec[100];
-  hill(msg, enc, 1); printf("Encrypted: %s\n", enc);
-  hill(enc, dec, 0); printf("Decrypted: %s\n", dec);
+    unsigned int a[3][3] = {{6, 24, 1}, {13, 16, 10}, {20, 17, 15}};  // Encryption key
+    unsigned int b[3][3] = {{8, 5, 10}, {21, 8, 21}, {21, 12, 8}};   // Decryption key (inverse mod 26)
+    int i, j, t;
+    unsigned int c[3], d[3];
+    char msg[4]; // buffer for exactly 3 characters + null terminator
+
+    printf("Enter plain text (3 letters in uppercase): ");
+    scanf("%3s", msg); // ensure input is limited to 3 characters
+
+    // Ensure the message has exactly 3 characters
+    if (strlen(msg) != 3) {
+        printf("Error: The plain text must be exactly 3 letters.\n");
+        return 1;
+    }
+
+    // Convert plain text to numerical values (A=0, B=1, ..., Z=25)
+    for (i = 0; i < 3; i++) {
+        c[i] = msg[i] - 'A';
+        printf("%d ", c[i]); // display numerical representation of characters
+    }
+
+    // Encrypt the message using matrix 'a'
+    for (i = 0; i < 3; i++) {
+        t = 0;
+        for (j = 0; j < 3; j++) { 
+            t += a[i][j] * c[j];
+        }
+        d[i] = t % 26; // mod 26 for alphabet range
+    }
+
+    // Output encrypted cipher text
+    printf("\nEncrypted Cipher Text: ");
+    for (i = 0; i < 3; i++) {
+        printf("%c", d[i] + 'A');
+    }
+
+    // Decrypt the message using matrix 'b'
+    for (i = 0; i < 3; i++) {
+        t = 0;
+        for (j = 0; j < 3; j++) { 
+            t += b[i][j] * d[j];
+        }
+        c[i] = t % 26; // mod 26 for alphabet range
+    }
+
+    // Output decrypted cipher text
+    printf("\nDecrypted Cipher Text: ");
+    for (i = 0; i < 3; i++) {
+        printf("%c", c[i] + 'A');
+    }
+
+    printf("\n");
+
+    return 0;
 }
 ```
 
 
 
 ## OUTPUT
-<img width="1918" height="841" alt="image" src="https://github.com/user-attachments/assets/e6c5af61-68ca-44db-9919-0476c3719b68" />
+<img width="1700" height="898" alt="Screenshot 2025-09-10 134150" src="https://github.com/user-attachments/assets/9d033489-59be-403b-8026-18b808a5ec44" />
+<img width="1691" height="373" alt="Screenshot 2025-09-10 134205" src="https://github.com/user-attachments/assets/67d4a19d-0b2c-46fa-a879-5b2e223230ac" />
 
 ## RESULT
 The program is executed successfully
